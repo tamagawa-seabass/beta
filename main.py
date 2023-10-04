@@ -2,153 +2,105 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 from PIL import Image
+import datetime
 from datetime import timedelta
 
-
-import datetime
-import pytz
-#!pip install suntime
-#from suntime import Sun
-
-st.title("TAMAGAWA RIVER aka TAMAZON")
-
-st.write("SEABASS RADER ｼｰﾊﾞｽﾚｰﾀﾞｰ")
+"""
+### 多摩川シーバス予報（ベータ版） 
+### Tama River Labrax forecast. beta 2.0
+一般に知られてる生態を元にその日のシーバスの場所を予想します。
+季節（春夏秋冬）、時刻（夜、朝、昼、夜）を変数にし
+場所を選定します。
+シーバスの生態について学習中の方の助けになれば幸いです。
 
 
-option=st.selectbox(
-    "季節を選択してください",
-    ["early spring","spring","late spring","early summer",
-    "summer","late summer","early autum","autum","late winter"]
-)
-
-"season you have chosen",option
+"""
 
 
+# code for transfer
+
+dt_now=datetime.datetime.now()
+
+
+from suntime import Sun
 
 
 
-if st.checkbox('bag of fish'):
-    img=Image.open("sample.jpg")
-    st.image(img,caption="stream",use_column_width=True)
-
-# version 1
-
-# reflecting time and season
-
-
-tz = pytz.timezone('Asia/Tokyo')
-dt_now = datetime.datetime.now(tz)
-
-print(dt_now)
-print(type(dt_now))
+sun=Sun(35.534230,139.779020)
+sunrise=sun.get_local_sunrise_time()
+sunset=sun.get_local_sunset_time()
+# タイムゾーンを考慮して時刻を修正
+#sunrise += datetime.timedelta(hours=9)
+#sunset += datetime.timedelta(hours=9)
 
 df=pd.read_csv("experiment.csv")
 
-
-
-#latitude = 35.534230
-#longitude = 139.779020
-#sun = Sun(latitude, longitude)
-
-# 日の出・日の入り時刻
-#sunrise = sun.get_local_sunrise_time()
-sunrise=5
-#sunset = sun.get_local_sunset_time()
-sunset=19
-
-# タイムゾーンを考慮して時刻を修正
-#timezone_offset = timedelta(hours=9)
-#sunrise += timezone_offset
-#sunset += timezone_offset
-
 # sun system effect
+hour_ranges = [(0, sunrise.hour-2), (sunrise.hour-2, sunrise.hour+2), (sunrise.hour+2, sunset.hour-2), (sunset.hour-2, sunset.hour+2), (sunset.hour+2, 24)]
+rand_ranges = [(40, 60), (70, 80), (10, 15), (60, 75), (40, 60)]
 
-# before morning
-if dt_now.hour<sunrise-2:
-    t=int(np.random.randint(0,10,1))
-
-# morning     sunrise +-2
-elif sunrise-2<= dt_now.hour<sunrise+2:
-    t=int(np.random.randint(10,20,1))
-# daytime
-elif sunrise+2<=dt_now.hour<sunset-2:
-    t=int(np.random.randint(20,30,1))
-# sunset time  sunset+-2
-elif sunset-2<=dt_now.hour<sunset+2:
-    t=int(np.random.randint(30,40,1))
-#night til midnight
-else:
-    t=int(np.random.randint(40,50,1))
+for i, (h_start, h_end) in enumerate(hour_ranges):
+    if h_start <= dt_now.hour < h_end:
+        t = int(np.random.randint(*rand_ranges[i], 1))
+        break
 
 
-# sun indivial effect
-if dt_now.hour<sunrise-2:
-    df["night"]=df["night"]*4
+# season definder
+month = [(1, 3), (4, 5), (6, 9), (10, 12)]
+season = ["winter", "spring", "summer", "autumn"]
 
-# morning     sunrise +-2
-elif sunrise-2<= dt_now.hour<sunrise+2:
-    df["night"]=df["night"]*4
-# daytime
-elif sunrise+2<=dt_now.hour<sunset-2:
-    df["day"]=df["day"]*4
-# sunset time  sunset+-2
-elif sunset-2<=dt_now.hour<sunset+2:
-    df["night"]=df["night"]*4
-#night til midnight
-else:
-    df["night"]=df["night"]*4
+s = None
+
+for i, (s_start, s_end) in enumerate(month):
+    if s_start <= dt_now.month <= s_end:
+        s = season[i]
+        break
 
 
 
-# seasonal factor reflection
-if dt_now.month<4:
-    df["winter"]=df["winter"]*4
-elif 4<=dt_now.month<7:
-    df["spring"]=df["spring"]*4
-elif 7<=dt_now.month<10:
-    df["summer"]=df["summer"]*4
-elif 10<=dt_now.month<12:
-    df["autum"]=df["autum"]*4
-else:
-    df["winter"]=df["winter"]
+#core code !!!!!
+
+output=df.sample(weights=df[s],frac=float(t/100))
+print(t)
+print(output.count())
 
 
-#要素の集計作業
-df["total"]=df[["night","day","spring","summer","autum","winter","rain","water level","tide","wind"]].sum(axis=1)
+coordination=output[["lon","lat"]]
 
-selection=df.nlargest(t,"total")
+r=output[s].mean()
 
-cordination=selection[["lat","lon"]]
+st.write(f'多摩川シーバス\nポイント予想要素\n\n〇日付  {dt_now.month}月{dt_now.day}日\n〇時刻  {dt_now.strftime("%H:%M")}\n〇季節   {s}\n〇日の出: {sunrise.strftime("%H:%M")}\n〇日没: {sunset.strftime("%H:%M")}\n\n\n〇遡上係数　：　{r}\n*数値が高いほど上流に期待\n\n\n対応準備中項目\n〇潮汐　：　準備中\n〇天気　：　雨履歴　\n〇水位　：　')
+
+st.write("マップの算出結果は計算毎に異なります。計算要素が同じでも異なる結果になります。")
+
+#option=st.selectbox(
+#    "季節を選択してください",
+#    ["early spring","spring","late spring","early summer",
+#    "summer","late summer","early autum","autum","late winter"]
+#)
+
+#"season you have chosen",option
 
 
-st.map(cordination)
-st.write(sunrise)
 
-#a=[[35.524381, 139.795240],
-#[35.524020, 139.792363],
-#[35.523334, 139.791623],
-#[35.525010, 139.795766],
-#[35.534106, 139.778623],
-#[35.534268, 139.778972],
-#[35.534230, 139.779020],
-#[35.534077, 139.779368],
-#[35.534145, 139.779019],
-#[35.530636, 139.787002],
-#[35.530894, 139.785900],
-#[35.538708, 139.765624],
-#[35.539049, 139.764717],
-#[35.541406, 139.767163],
-#[35.539754, 139.770390]]
+
+
+#if st.checkbox('bag of fish'):
+#    img=Image.open("sample.jpg")
+#    st.image(img,caption="stream",use_column_width=True)
+
+
+st.map(coordination)
+
+"""
+### Tama River Labrax forecast. beta 2.0
+一般に知られてる生態を元にその日のシーバスの場所を予想します。
+情報精度、選出される場所が危険な場合も想定されます。
+情報により生じる如何なる問題においても一切の責任を負いません。
+釣り禁止の箇所、夜釣り禁止時刻においても表示が出でますがルールを確認の上
+ルールに従う必要があります。
 
 
 """
-### OBJECTIVE
-## Fishing is about to spot proper place. 
-## This is a map my personal knowledge is reflected. 
-# This is my personal use only. 
-# I owe no responsibility for any touble caused by this data. 
-# Nothing has determined, risk is all yours. 
 
 
-
-"""
