@@ -4,7 +4,8 @@ import pandas as pd
 from PIL import Image
 import datetime
 from datetime import timedelta
-
+#import suntime
+#from suntime import Sun
 """
 ### 多摩川シーバス予報（ベータ版） 
 ### Tama River Labrax forecast. beta 2.0
@@ -22,13 +23,16 @@ from datetime import timedelta
 dt_now=datetime.datetime.now()
 
 
-from suntime import Sun
 
 
 
-sun=Sun(35.534230,139.779020)
-sunrise=sun.get_local_sunrise_time()
-sunset=sun.get_local_sunset_time()
+#sun=Sun(35.534230,139.779020)
+#sunrise=sun.get_local_sunrise_time()
+#sunset=sun.get_local_sunset_time()
+
+sunrise=5
+sunset=18
+
 # タイムゾーンを考慮して時刻を修正
 #sunrise += datetime.timedelta(hours=9)
 #sunset += datetime.timedelta(hours=9)
@@ -36,7 +40,7 @@ sunset=sun.get_local_sunset_time()
 df=pd.read_csv("experiment.csv")
 
 # sun system effect
-hour_ranges = [(0, sunrise.hour-2), (sunrise.hour-2, sunrise.hour+2), (sunrise.hour+2, sunset.hour-2), (sunset.hour-2, sunset.hour+2), (sunset.hour+2, 24)]
+hour_ranges = [(0, sunrise-2), (sunrise-2, sunrise+2), (sunrise+2, sunset-2), (sunset-2, sunset+2), (sunset+2, 24)]
 rand_ranges = [(40, 60), (70, 80), (10, 15), (60, 75), (40, 60)]
 
 for i, (h_start, h_end) in enumerate(hour_ranges):
@@ -69,7 +73,7 @@ coordination=output[["lon","lat"]]
 
 r=output[s].mean()
 
-st.write(f'多摩川シーバス\nポイント予想要素\n\n〇日付  {dt_now.month}月{dt_now.day}日\n〇時刻  {dt_now.strftime("%H:%M")}\n〇季節   {s}\n〇日の出: {sunrise.strftime("%H:%M")}\n〇日没: {sunset.strftime("%H:%M")}\n\n\n〇遡上係数　：　{r}\n*数値が高いほど上流に期待\n\n\n対応準備中項目\n〇潮汐　：　準備中\n〇天気　：　雨履歴　\n〇水位　：　')
+st.write(f'多摩川シーバス\nポイント予想要素\n\n〇日付  {dt_now.month}月{dt_now.day}日\n〇時刻  {dt_now.strftime("%H:%M")}\n〇季節   {s}\n〇日の出: 5:30\n〇日没: 18:30\n\n\n〇遡上係数　：　{r}\n*数値が高いほど上流に期待\n\n\n対応準備中項目\n〇潮汐　：　準備中\n〇天気　：　雨履歴　\n〇水位　：　')
 
 st.write("マップの算出結果は計算毎に異なります。計算要素が同じでも異なる結果になります。")
 
