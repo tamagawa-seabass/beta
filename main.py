@@ -73,7 +73,7 @@ coordination=output[["lon","lat"]]
 
 r=output[s].mean()
 
-st.write(f'多摩川シーバス\nポイント予想要素\n\n〇日付  {dt_now.month}月{dt_now.day}日\n〇時刻  {dt_now.strftime("%H:%M")}\n〇季節   {s}\n〇日の出: 5:30\n〇日没: 18:30\n\n\n〇遡上係数　：　{r}\n*数値が高いほど上流に期待\n\n\n対応準備中項目\n〇潮汐　：　準備中\n〇天気　：　雨履歴　\n〇水位　：　')
+#st.write(f'多摩川シーバス\nポイント予想要素\n\n〇日付  {dt_now.month}月{dt_now.day}日\n〇時刻  {dt_now.strftime("%H:%M")}\n〇季節   {s}\n〇日の出: 5:30\n〇日没: 18:30\n\n\n〇遡上係数　：　{r}\n*数値が高いほど上流に期待\n\n\n対応準備中項目\n〇潮汐　：　準備中\n〇天気　：　雨履歴　\n〇水位　：　')
 
 st.write("マップの算出結果は計算毎に異なります。計算要素が同じでも異なる結果になります。")
 
