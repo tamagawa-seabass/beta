@@ -31,28 +31,26 @@ sunset=18
 df=pd.read_csv("experiment.csv")
 
 # sun system effect
-#hour_ranges = [(0, sunrise-2), (sunrise-2, sunrise+2), (sunrise+2, sunset-2), (sunset-2, sunset+2), (sunset+2, 24)]
-#rand_ranges = [(40, 60), (70, 80), (10, 15), (60, 75), (40, 60)]
+hour_ranges = [(0, sunrise-2), (sunrise-2, sunrise+2), (sunrise+2, sunset-2), (sunset-2, sunset+2), (sunset+2, 24)]
+rand_ranges = [(40, 60), (70, 80), (10, 15), (60, 75), (40, 60)]
 
-#for i, (h_start, h_end) in enumerate(hour_ranges):
-#    if h_start <= dt_now.hour < h_end:
-#        t = int(np.random.randint(*rand_ranges[i], 1))
-#        break
+for i, (h_start, h_end) in enumerate(hour_ranges):
+    if h_start <= dt_now.hour < h_end:
+        t = int(np.random.randint(*rand_ranges[i], 1))
+        break
 
-t=50
 
 # season definder
-#month = [(1, 3), (4, 5), (6, 9), (10, 12)]
-#season = ["winter", "spring", "summer", "autumn"]
+month = [(1, 3), (4, 5), (6, 9), (10, 12)]
+season = ["winter", "spring", "summer", "autumn"]
 
-#s = None
+s = None
 
-#for i, (s_start, s_end) in enumerate(month):
-#    if s_start <= dt_now.month <= s_end:
-#        s = season[i]
-#        break
+for i, (s_start, s_end) in enumerate(month):
+    if s_start <= dt_now.month <= s_end:
+        s = season[i]
+        break
 
-s="autumn"
 
 #core code !!!!!
 
